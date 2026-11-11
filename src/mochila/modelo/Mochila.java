@@ -5,10 +5,10 @@ import java.util.Comparator;
 import java.util.List;
 
 public class Mochila {
-    
+
     public static class ElementoSeleccionado {
         private Objeto objeto;
-        private double fraccion;
+        private double fraccion; // 1.0 para completo, < 1.0 para fraccional
 
         public ElementoSeleccionado(Objeto objeto, double fraccion) {
             this.objeto = objeto;
@@ -19,63 +19,60 @@ public class Mochila {
         public double getFraccion() { return fraccion; }
     }
 
-    private double capacidadLimite;
-    private String criterio;
-    private List<ElementoSeleccionado> contenido;
+    private double capacidadMaxima;
+    private List<ElementoSeleccionado> seleccionados;
 
-    public Mochila(double capacidadLimite, String criterio) {
-        this.capacidadLimite = capacidadLimite;
-        this.criterio = criterio.toLowerCase();
-        this.contenido = new ArrayList<>();
+    public Mochila(double capacidadMaxima) {
+        this.capacidadMaxima = capacidadMaxima;
+        this.seleccionados = new ArrayList<>();
     }
 
-    public void llenarMochila(List<Nodo> listaNodos) {
-        listaNodos.sort(Comparator.comparingDouble(Nodo::getDistancia));
+    public void llenarMochila(List<Objeto> objetos) {
+        // Criterio Voraz (Greedy): Ordenar de MAYOR a MENOR por relación Valor/Peso
+        objetos.sort(Comparator.comparingDouble(Objeto::getRelacionValorPeso).reversed());
 
-        double acumuladoActual = 0.0;
+        double pesoActual = 0.0;
 
-        for (Nodo nodo : listaNodos) {
-            System.out.println("\nProcesando " + nodo.getNombre() + " (Distancia: " + nodo.getDistancia() + ")...");
+        for (Objeto obj : objetos) {
+            if (pesoActual >= capacidadMaxima) {
+                break;
+            }
 
-            for (Objeto obj : nodo.getObjetos()) {
-                if (acumuladoActual >= capacidadLimite) {
-                    break;
-                }
+            double espacioLibre = capacidadMaxima - pesoActual;
 
-                double medida = criterio.equals("peso") ? obj.getPeso() : obj.getValor();
-                double espacioDisponible = capacidadLimite - acumuladoActual;
-
-                if (medida <= espacioDisponible) {
-                    contenido.add(new ElementoSeleccionado(obj, 1.0));
-                    acumuladoActual += medida;
-                } else {
-                    double fraccion = espacioDisponible / medida;
-                    contenido.add(new ElementoSeleccionado(obj, fraccion));
-                    acumuladoActual += espacioDisponible;
-                    break;
-                }
+            if (obj.getPeso() <= espacioLibre) {
+                // Entra completo
+                seleccionados.add(new ElementoSeleccionado(obj, 1.0));
+                pesoActual += obj.getPeso();
+            } else {
+                // Entra solo una fracción
+                double fraccion = espacioLibre / obj.getPeso();
+                seleccionados.add(new ElementoSeleccionado(obj, fraccion));
+                pesoActual += espacioLibre;
+                break;
             }
         }
     }
 
-    public void mostrarResumen() {
-        System.out.println("\n--- RESUMEN DE LA MOCHILA (Criterio: " + criterio.toUpperCase() + ") ---");
-        double pesoTotal = 0.0;
+    public void mostrarResultado() {
+        System.out.println("Objetos seleccionados:");
         double valorTotal = 0.0;
 
-        for (ElementoSeleccionado elem : contenido) {
+        for (ElementoSeleccionado elem : seleccionados) {
             Objeto obj = elem.getObjeto();
-            double fraccion = elem.getFraccion();
+            double f = elem.getFraccion();
+            double valorAportado = obj.getValor() * f;
+            valorTotal += valorAportado;
 
-            double pesoTomado = obj.getPeso() * fraccion;
-            double valorTomado = obj.getValor() * fraccion;
-            pesoTotal += pesoTomado;
-            valorTotal += valorTomado;
-
-            System.out.printf("- %s: Tomado %.1f%% -> Peso: %.2f, Valor: %.2f%n",
-                    obj.getNombre(), fraccion * 100, pesoTomado, valorTomado);
+            if (f == 1.0) {
+                System.out.printf("%s completo%n", obj.getNombre());
+            } else {
+                // Muestra la fracción formateada (ejemplo: 20/30 Parte del objeto C)
+                int pesoParte = (int) Math.round(obj.getPeso() * f);
+                int pesoTotalObj = (int) Math.round(obj.getPeso());
+                System.out.printf("%d/%d Parte del objeto %s%n", pesoParte, pesoTotalObj, obj.getNombre());
+            }
         }
-
-        System.out.printf("Total Acumulado -> Peso: %.2f | Valor: %.2f%n", pesoTotal, valorTotal);
+        System.out.printf("Valor total aproximado: %.0f%n", valorTotal);
     }
 }

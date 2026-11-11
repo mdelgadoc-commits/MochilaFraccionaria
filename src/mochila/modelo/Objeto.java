@@ -2,21 +2,21 @@ package mochila.modelo;
 
 public class Objeto {
     private String nombre;
-    private double peso;
     private double valor;
+    private double peso;
 
-    public Objeto(String nombre, double peso, double valor) {
+    public Objeto(String nombre, double valor, double peso) {
         this.nombre = nombre;
-        this.peso = peso;
         this.valor = valor;
+        this.peso = peso;
     }
 
     public String getNombre() { return nombre; }
-    public double getPeso() { return peso; }
     public double getValor() { return valor; }
+    public double getPeso() { return peso; }
 
-    @Override
-    public String toString() {
-        return nombre + " (Peso: " + peso + ", Valor: " + valor + ")";
+    // Retorna la densidad (cuánto valor aporta por cada unidad de peso)
+    public double getRelacionValorPeso() {
+        return valor / peso;
     }
 }
