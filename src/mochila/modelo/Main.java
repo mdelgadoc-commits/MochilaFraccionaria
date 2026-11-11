@@ -2,17 +2,39 @@ package mochila.modelo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        // EJEMPLO 2 DE LA GUÍA
-        List<Objeto> objetosEjemplo2 = new ArrayList<>();
-        objetosEjemplo2.add(new Objeto("A", 80.0, 20.0));
-        objetosEjemplo2.add(new Objeto("B", 100.0, 10.0));
-        objetosEjemplo2.add(new Objeto("C", 120.0, 30.0));
+        Scanner scanner = new Scanner(System.in);
 
-        Mochila mochila2 = new Mochila(25.0);
-        mochila2.llenarMochila(objetosEjemplo2);
-        mochila2.mostrarResultado();
+        System.out.println(" SISTEMA DE MOCHILA FRACCIONAL (GREEDY)");
+        System.out.print("Ingrese la capacidad maxima de la mochila: ");
+        double capacidad = scanner.nextDouble();
+
+        System.out.print("¿Cuantos objetos desea ingresar?: ");
+        int cantidad = scanner.nextInt();
+
+        List<Objeto> objetos = new ArrayList<>();
+
+        for (int i = 1; i <= cantidad; i++) {
+            System.out.println("\n Datos del Objeto " + i + "..");
+            System.out.print("Nombre/Identificador: ");
+            String nombre = scanner.next();
+
+            System.out.print("Valor: ");
+            double valor = scanner.nextDouble();
+
+            System.out.print("Peso: ");
+            double peso = scanner.nextDouble();
+
+            objetos.add(new Objeto(nombre, valor, peso));
+        }
+
+        Mochila mochila = new Mochila(capacidad);
+        mochila.llenarMochila(objetos);
+        mochila.mostrarResultado(objetos);
+
+        scanner.close();
     }
 }

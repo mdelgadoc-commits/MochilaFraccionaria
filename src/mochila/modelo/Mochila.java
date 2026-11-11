@@ -8,7 +8,7 @@ public class Mochila {
 
     public static class ElementoSeleccionado {
         private Objeto objeto;
-        private double fraccion; // 1.0 para completo, < 1.0 para fraccional
+        private double fraccion;
 
         public ElementoSeleccionado(Objeto objeto, double fraccion) {
             this.objeto = objeto;
@@ -28,12 +28,13 @@ public class Mochila {
     }
 
     public void llenarMochila(List<Objeto> objetos) {
-        // Criterio Voraz (Greedy): Ordenar de MAYOR a MENOR por relación Valor/Peso
-        objetos.sort(Comparator.comparingDouble(Objeto::getRelacionValorPeso).reversed());
+        // Clonar la lista para ordenar sin alterar el orden original ingresado por el usuario
+        List<Objeto> copiaObjetos = new ArrayList<>(objetos);
+        copiaObjetos.sort(Comparator.comparingDouble(Objeto::getRelacionValorPeso).reversed());
 
         double pesoActual = 0.0;
 
-        for (Objeto obj : objetos) {
+        for (Objeto obj : copiaObjetos) {
             if (pesoActual >= capacidadMaxima) {
                 break;
             }
@@ -41,11 +42,9 @@ public class Mochila {
             double espacioLibre = capacidadMaxima - pesoActual;
 
             if (obj.getPeso() <= espacioLibre) {
-                // Entra completo
                 seleccionados.add(new ElementoSeleccionado(obj, 1.0));
                 pesoActual += obj.getPeso();
             } else {
-                // Entra solo una fracción
                 double fraccion = espacioLibre / obj.getPeso();
                 seleccionados.add(new ElementoSeleccionado(obj, fraccion));
                 pesoActual += espacioLibre;
@@ -54,7 +53,14 @@ public class Mochila {
         }
     }
 
-    public void mostrarResultado() {
+    public void mostrarResultado(List<Objeto> objetosIngresados) {
+        System.out.println("\n OBJETOS INGRESADOS EN EL SISTEMA ");
+        for (Objeto obj : objetosIngresados) {
+            System.out.printf("- Objeto: %s | Valor: %.2f | Peso: %.2f | Densidad (Valor/Peso): %.2f%n",
+                    obj.getNombre(), obj.getValor(), obj.getPeso(), obj.getRelacionValorPeso());
+        }
+
+        System.out.println("\n RESULTADO DE LA SELECCION (GREEDY) ");
         System.out.println("Objetos seleccionados:");
         double valorTotal = 0.0;
 
@@ -67,12 +73,11 @@ public class Mochila {
             if (f == 1.0) {
                 System.out.printf("%s completo%n", obj.getNombre());
             } else {
-                // Muestra la fracción formateada (ejemplo: 20/30 Parte del objeto C)
                 int pesoParte = (int) Math.round(obj.getPeso() * f);
                 int pesoTotalObj = (int) Math.round(obj.getPeso());
                 System.out.printf("%d/%d Parte del objeto %s%n", pesoParte, pesoTotalObj, obj.getNombre());
             }
         }
-        System.out.printf("Valor total aproximado: %.0f%n", valorTotal);
+        System.out.printf("Valor total obtenido: %.2f%n", valorTotal);
     }
 }
