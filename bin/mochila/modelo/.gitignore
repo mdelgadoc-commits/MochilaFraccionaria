@@ -1,9 +1,0 @@
-# Archivos de compilación de Java
-*.class
-bin/
-
-# Configuración de Eclipse
-.metadata/
-.classpath
-.project
-.settings/
